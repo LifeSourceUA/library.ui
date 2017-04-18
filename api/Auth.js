@@ -1,5 +1,5 @@
 class Auth {
-    static url = `http://localhost:3001/v1/token`;
+    static url = `${AUTH_ENDPOINT}/v1/token`;
 
     static async getTokens() {
         let tokens = JSON.parse(localStorage.getItem('Hope.Auth'));

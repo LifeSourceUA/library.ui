@@ -12,6 +12,7 @@
     "@blueprintjs/datetime": "^1.11.0",
     "babel-loader": "^6.4.1",
     "babel-plugin-module-resolver": "^2.7.0",
+    "babel-plugin-transform-define": "^1.2.0",
     "babel-plugin-wrap-in-js": "^1.1.1",
     "express": "^4.15.2",
     "moment": "^2.18.1",

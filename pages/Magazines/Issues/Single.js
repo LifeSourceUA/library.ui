@@ -42,7 +42,7 @@ class Single extends Component {
         const { issueId, magazineId } = this.props.url.query;
 
         Auth.getTokens().then((tokens) => {
-            return fetch(`http://localhost:3000/v1/periodicals/${magazineId}/issues/${issueId}`, {
+            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
                 headers: {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }
@@ -94,7 +94,7 @@ class Single extends Component {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const tokens = await Auth.getTokens();
-            const response = await fetch(`http://localhost:3000/v1/periodicals/${magazineId}/issues/${issueId}/attachments`, {
+            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}/attachments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/octet-stream',
@@ -124,7 +124,7 @@ class Single extends Component {
 
         const { issueId, magazineId } = this.props.url.query;
 
-        const url = `http://localhost:3000/v1/periodicals/${magazineId}/issues/${issueId}/attachments/${attachmentId}`;
+        const url = `${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}/attachments/${attachmentId}`;
         Auth.getTokens().then((tokens) => {
             return fetch(url, {
                 method: 'DELETE',
@@ -147,7 +147,7 @@ class Single extends Component {
         const issueId = this.props.url.query.issueId;
         const magazineId = this.props.url.query.magazineId;
 
-        let url = `http://localhost:3000/v1/periodicals/${magazineId}/issues`;
+        let url = `${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`;
         if (action === 'edit') {
             url += `/${issueId}`;
         }

@@ -15,7 +15,7 @@ class List extends Component {
         const magazineId = this.props.url.query.magazineId;
 
         Auth.getTokens().then((tokens) => {
-            return fetch(`http://localhost:3000/v1/periodicals/${magazineId}/issues`, {
+            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`, {
                 headers: {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }

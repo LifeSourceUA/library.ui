@@ -9,6 +9,10 @@
       "wrap-in-js", {
         "extensions": ["css$"]
       }
+    ],
+    [
+      "transform-define",
+      "./env.config.js"
     ]
   ],
   "presets": [

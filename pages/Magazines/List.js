@@ -12,7 +12,7 @@ class List extends Component {
 
     componentDidMount() {
         Auth.getTokens().then((tokens) => {
-            return fetch('http://localhost:3000/v1/periodicals?type=magazine', {
+            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals?type=magazine`, {
                 headers: {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }

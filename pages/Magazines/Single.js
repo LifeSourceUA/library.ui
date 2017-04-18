@@ -18,7 +18,7 @@ class Single extends Component {
             action = 'edit';
 
             Auth.getTokens().then((tokens) => {
-                return fetch(`http://localhost:3000/v1/periodicals/${magazineId}?type=magazine`, {
+                return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}?type=magazine`, {
                     headers: {
                         Authorization: `Bearer ${tokens.accessToken}`
                     }
@@ -54,7 +54,7 @@ class Single extends Component {
         data.type = 'magazine';
         const action = this.state.action;
 
-        let url = `http://localhost:3000/v1/periodicals?type=magazine`;
+        let url = `${LIBRARY_ENDPOINT}/v1/periodicals?type=magazine`;
         if (action === 'edit') {
             url += `/${data.id}`;
         }
