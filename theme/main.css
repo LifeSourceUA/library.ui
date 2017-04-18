@@ -1,0 +1,105 @@
+@import "@blueprintjs/core/dist/blueprint.css";
+
+body {
+    background-color: #f5f8fa;
+}
+
+.app-wrap {
+    .app {
+        width: 1000px;
+        margin: 0 auto;
+    }
+}
+
+.app-content {
+    margin-top: 30px;
+
+    h1 {
+        font-size: 26px;
+        color: #888888;
+
+        span {
+            color: #182026;
+        }
+    }
+    h2 {
+        font-size: 20px;
+        margin-top: 15px;
+    }
+}
+
+.list-head {
+    display: flex;
+    justify-content: space-between;
+}
+.app-list {
+    width: 100%;
+
+    .app-list-id {
+        width: 10%;
+    }
+    .app-list-title {}
+    .app-list-actions {
+        width: 10%;
+    }
+}
+
+.app-edit {
+    form {
+        input {
+            width: 100%;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+
+            button {
+                margin-left: 15px;
+            }
+        }
+    }
+}
+
+.dropzone-inner {
+    margin: 10px;
+}
+.attachment-actions {
+    a {
+        display: block;
+    }
+}
+.attachment-label {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.app-login {
+    width: 300px;
+    margin: 0 auto;
+
+    .error-message {
+        color: red;
+    }
+
+    form {
+        input {
+            width: 100%;
+        }
+
+        .controls {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+
+            button {
+                margin-left: 15px;
+            }
+        }
+    }
+}
