@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { Link } from 'routes';
 import Layout from 'components/Layout'
 import Auth from 'api/Auth';
+import withAuth from 'lib/auth/withAuth';
 
 class List extends Component {
     state = {
@@ -11,29 +12,25 @@ class List extends Component {
         total: 0
     };
 
-    componentDidMount() {
+    componentDidMount = async () => {
         const magazineId = this.props.url.query.magazineId;
 
-        Auth.getTokens().then((tokens) => {
-            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`, {
-                headers: {
-                    Authorization: `Bearer ${tokens.accessToken}`
-                }
-            })
-        })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                this.setState({
-                    items: result.issues,
-                    parent: result.periodical,
-                    total: result.meta.total
-                });
-            });
-    }
+        const tokens = await Auth.getTokens();
+        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`, {
+            headers: {
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
+        });
 
-    render() {
+        const result = await response.json();
+        this.setState({
+            items: result.issues,
+            parent: result.periodical,
+            total: result.meta.total
+        });
+    };
+
+    render = () => {
         const { parent } = this.state;
 
         const renderRow = (item) => {
@@ -87,4 +84,4 @@ class List extends Component {
     };
 };
 
-export default List;
+export default withAuth(List);

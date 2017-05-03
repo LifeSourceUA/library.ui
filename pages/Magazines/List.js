@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import { Link } from 'routes';
 import Layout from 'components/Layout'
 import Auth from 'api/Auth';
+import withAuth from 'lib/auth/withAuth';
 
 class List extends Component {
     state = {
@@ -10,26 +11,21 @@ class List extends Component {
         total: 0
     };
 
-    componentDidMount() {
-        Auth.getTokens().then((tokens) => {
-            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals?type=magazine`, {
-                headers: {
-                    Authorization: `Bearer ${tokens.accessToken}`
-                }
-            });
-        })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                this.setState({
-                    items: result.periodicals,
-                    total: result.meta.total
-                });
-            });
-    }
+    componentDidMount = async () => {
+        const tokens = await Auth.getTokens();
+        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals?type=magazine`, {
+            headers: {
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
+        });
+        const result = await response.json();
+        this.setState({
+            items: result.periodicals,
+            total: result.meta.total
+        });
+    };
 
-    render() {
+    render = () => {
         const renderRow = (item) => {
             const routeParams = {
                 magazineId: item.id
@@ -76,7 +72,7 @@ class List extends Component {
                 </table>
             </Layout>
         );
-    }
+    };
 }
 
-export default List;
+export default withAuth(List);

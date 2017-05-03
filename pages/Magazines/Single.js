@@ -4,39 +4,37 @@ import { Router } from 'routes';
 import Layout from 'components/Layout'
 import * as Obj from 'lib/object';
 import Auth from 'api/Auth';
+import withAuth from 'lib/auth/withAuth';
 
 class Single extends Component {
     state = {
         item: {}
     };
 
-    componentDidMount() {
+    componentDidMount = async () => {
         const magazineId = this.props.url.query.magazineId;
+
         let action = 'create';
 
         if (magazineId) {
             action = 'edit';
 
-            Auth.getTokens().then((tokens) => {
-                return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}?type=magazine`, {
-                    headers: {
-                        Authorization: `Bearer ${tokens.accessToken}`
-                    }
-                })
-            })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((item) => {
-                    this.setState(
-                        {
-                            item: { ...Obj.flatten(item) }
-                        }
-                    );
-                });
+            const tokens = await Auth.getTokens();
+            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}?type=magazine`, {
+                headers: {
+                    Authorization: `Bearer ${tokens.accessToken}`
+                }
+            });
+
+            const item = await response.json();
+            this.setState(
+                {
+                    item: { ...Obj.flatten(item) }
+                }
+            );
         }
         this.setState({ action });
-    }
+    };
 
     handleInput = (event) => {
         const el = event.target;
@@ -49,7 +47,7 @@ class Single extends Component {
         });
     };
 
-    handleSave = () => {
+    handleSave = async () => {
         const data = Obj.unflatten(this.state.item);
         data.type = 'magazine';
         const action = this.state.action;
@@ -59,21 +57,17 @@ class Single extends Component {
             url += `/${data.id}`;
         }
 
-        Auth.getTokens().then((tokens) => {
-            return fetch(url, {
-                method: action === 'create' ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokens.accessToken}`
-                },
-                body: JSON.stringify(data)
-            });
-        })
-        .then((response) => {
-            Router.pushRoute('magazines-list');
-        }).catch((error) => {
-            console.error(error);
+        const tokens = await Auth.getTokens();
+        await fetch(url, {
+            method: action === 'create' ? 'POST' : 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokens.accessToken}`
+            },
+            body: JSON.stringify(data)
         });
+
+        Router.pushRoute('magazines-list');
     };
 
     handleCancel = () => {
@@ -92,7 +86,7 @@ class Single extends Component {
         );
     };
 
-    render() {
+    render = () => {
         const { item, action } = this.state;
 
         return action === 'create' || item.id ? (
@@ -141,7 +135,7 @@ class Single extends Component {
                 </div>
             </Layout>
         ) : null;
-    }
+    };
 }
 
-export default Single;
+export default withAuth(Single);

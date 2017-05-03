@@ -7,6 +7,7 @@ import Layout from 'components/Layout'
 
 import Auth from 'api/Auth';
 import * as Obj from 'lib/object';
+import withAuth from 'lib/auth/withAuth';
 
 const flatten = (data) => {
     const result = Obj.flatten(data);
@@ -27,7 +28,7 @@ class Single extends Component {
         item: {}
     };
 
-    componentDidMount() {
+    componentDidMount = () => {
         const issueId = this.props.url.query.issueId;
         let action = 'create';
 
@@ -36,28 +37,23 @@ class Single extends Component {
             this.loadItem();
         }
         this.setState({ action });
-    }
+    };
 
-    loadItem = () => {
+    loadItem = async () => {
         const { issueId, magazineId } = this.props.url.query;
 
-        Auth.getTokens().then((tokens) => {
-            return fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
-                headers: {
-                    Authorization: `Bearer ${tokens.accessToken}`
-                }
-            });
-        })
-        .then((response) => {
-            return response.json();
-        })
-        .then((item) => {
-            this.setState(
-                {
-                    item: { ...flatten(item) }
-                }
-            );
+        const tokens = await Auth.getTokens();
+        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
+            headers: {
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
         });
+        const item = await response.json();
+        this.setState(
+            {
+                item: { ...flatten(item) }
+            }
+        );
     };
 
     handleInput = (event) => {
@@ -119,28 +115,26 @@ class Single extends Component {
         reader.readAsText(file, 'utf-8');
     };
 
-    removeAttachment = (attachmentId) => (event) => {
+    removeAttachment = (attachmentId) => async (event) => {
         event.preventDefault();
 
         const { issueId, magazineId } = this.props.url.query;
 
         const url = `${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}/attachments/${attachmentId}`;
-        Auth.getTokens().then((tokens) => {
-            return fetch(url, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokens.accessToken}`
-                }
-            });
-        }).then(() => {
-            this.loadItem();
-        }).catch((error) => {
-            console.error(error);
+
+        const tokens = await Auth.getTokens();
+        await fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokens.accessToken}`
+            }
         });
+
+        this.loadItem();
     };
 
-    handleSave = () => {
+    handleSave = async () => {
         const data = unflatten(this.state.item);
         const action = this.state.action;
 
@@ -152,21 +146,18 @@ class Single extends Component {
             url += `/${issueId}`;
         }
 
-        Auth.getTokens().then((tokens) => {
-            return fetch(url, {
-                method: action === 'create' ? 'POST' : 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${tokens.accessToken}`
-                },
-                body: JSON.stringify(data)
-            });
-        }).then((response) => {
-            Router.pushRoute('magazines-issues-list', {
-                magazineId
-            });
-        }).catch((error) => {
-            console.error(error);
+        const tokens = await Auth.getTokens();
+        await fetch(url, {
+            method: action === 'create' ? 'POST' : 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${tokens.accessToken}`
+            },
+            body: JSON.stringify(data)
+        });
+
+        Router.pushRoute('magazines-issues-list', {
+            magazineId
         });
     };
 
@@ -195,7 +186,7 @@ class Single extends Component {
         );
     };
 
-    render() {
+    render = () => {
         const { item, action } = this.state;
 
         const item$ = unflatten(item);
@@ -266,4 +257,4 @@ class Single extends Component {
     }
 }
 
-export default Single;
+export default withAuth(Single);
