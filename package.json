@@ -1,6 +1,6 @@
 {
   "name": "ls.library.ui",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Library UI",
   "scripts": {
     "dev": "node server.js",
