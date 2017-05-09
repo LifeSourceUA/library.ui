@@ -25,6 +25,8 @@ class Login extends Component {
                 }
             })
         }
+
+        Router.pushRoute('home');
     };
 
     handleInput = (event) => {
