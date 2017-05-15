@@ -6,9 +6,13 @@ import * as Obj from 'lib/object';
 import Auth from 'api/Auth';
 import withAuth from 'lib/auth/withAuth';
 
+const idPrefix = 'M.';
+
 class Single extends Component {
     state = {
-        item: {}
+        item: {
+            id: idPrefix
+        }
     };
 
     componentDidMount = async () => {
@@ -39,10 +43,15 @@ class Single extends Component {
     handleInput = (event) => {
         const el = event.target;
 
+        let value = el.value;
+        if (el.name === 'id' && !value.match(idPrefix)) {
+            value = `${idPrefix}${value}`;
+        }
+
         this.setState({
             item: {
                 ...this.state.item,
-                [el.name]: el.value
+                [el.name]: value
             }
         });
     };
