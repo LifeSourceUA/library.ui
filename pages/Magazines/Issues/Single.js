@@ -36,7 +36,12 @@ class Single extends Component {
             action = 'edit';
             this.loadItem();
         }
-        this.setState({ action });
+        this.setState({
+            action,
+            item: {
+                id: this.getId('0')
+            }
+        });
     };
 
     loadItem = async () => {
@@ -56,12 +61,28 @@ class Single extends Component {
         );
     };
 
+    getId = (number) => {
+        const magazineId = this.props.url.query.magazineId;
+
+        return `${magazineId}-${number.padStart(4, '0')}`;
+    };
+
     handleInput = (event) => {
         const el = event.target;
+
+        if (el.name === 'id') {
+            return;
+        }
+
+        let id = this.state.item.id;
+        if (el.name === 'numbers.total') {
+            id = this.getId(el.value);
+        }
 
         this.setState({
             item: {
                 ...this.state.item,
+                id,
                 [el.name]: el.value
             }
         });
