@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-
+import cx from 'classnames';
 import { Router } from 'routes';
 import Layout from 'components/Layout'
 import * as Obj from 'lib/object';
@@ -40,6 +40,15 @@ class Single extends Component {
         this.setState({ action });
     };
 
+    setValue = (key, value) => {
+        this.setState({
+            item: {
+                ...this.state.item,
+                [key]: value
+            }
+        });
+    };
+
     handleInput = (event) => {
         const el = event.target;
 
@@ -48,12 +57,7 @@ class Single extends Component {
             value = `${idPrefix}${value}`;
         }
 
-        this.setState({
-            item: {
-                ...this.state.item,
-                [el.name]: value
-            }
-        });
+        this.setValue(el.name, value);
     };
 
     handleSave = async () => {
@@ -95,6 +99,44 @@ class Single extends Component {
         );
     };
 
+    renderFreq = () => {
+        const { item } = this.state;
+        const selected = item['info.freq'];
+
+        const onClick = (value) => {
+            return () => {
+                this.setValue('info.freq', value);
+            }
+        };
+
+        const options = [
+            {
+                id: 'monthly',
+                title: 'ежемесячно'
+            },
+            {
+                id: 'quarterly',
+                title: 'ежеквартально'
+            }
+        ].map((item) => {
+            const buttonClass = cx({
+                'pt-button': true,
+                'pt-active': selected === item.id,
+                'pt-intent-primary': true
+            });
+
+            return (
+                <button type="button" className={ buttonClass } onClick={ onClick(item.id) } key={ item.id }>{ item.title }</button>
+            )
+        });
+
+        return (
+            <div className="pt-button-group">
+                { options }
+            </div>
+        );
+    };
+
     render = () => {
         const { item, action } = this.state;
 
@@ -133,8 +175,8 @@ class Single extends Component {
                             </label>
                             <label className="pt-label">
                                 Периодичность
-                                { this.renderInput('info.freq') }
                             </label>
+                            { this.renderFreq() }
                         </div>
                         <div className="controls">
                             <button type="button" className="pt-button pt-large pt-intent-success" onClick={ this.handleSave }>Сохранить</button>
