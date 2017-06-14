@@ -133,7 +133,7 @@ class Single extends Component {
                 }
             );
         };
-        reader.readAsText(file, 'utf-8');
+        reader.readAsArrayBuffer(file);
     };
 
     removeAttachment = (attachmentId) => async (event) => {
@@ -226,6 +226,22 @@ class Single extends Component {
                 </Dropzone>
             );
 
+        const attachment$ = action === 'edit' ? [
+            (
+                <h2 key="attachment-title">Файлы</h2>
+            ),
+            (
+                <div className="pt-card pt-elevation-1" key="attachment-el">
+                    <label className="pt-label attachment-label">
+                        PDF
+                    </label>
+                    { pdfComponent }
+                </div>
+            )
+        ] : null;
+
+        const canSave = !!item['numbers.total'] && item.title;
+
         return action === 'create' || item.id ? (
             <Layout>
                 <div className="app-edit">
@@ -260,15 +276,9 @@ class Single extends Component {
                                 { this.renderInput('numbers.total') }
                             </label>
                         </div>
-                        <h2>Файлы</h2>
-                        <div className="pt-card pt-elevation-1">
-                            <label className="pt-label attachment-label">
-                                PDF
-                            </label>
-                            { pdfComponent }
-                        </div>
+                        { attachment$ }
                         <div className="controls">
-                            <button type="button" className="pt-button pt-large pt-intent-success" onClick={ this.handleSave }>Сохранить</button>
+                            <button type="button" className="pt-button pt-large pt-intent-success" onClick={ this.handleSave } disabled={ !canSave }>Сохранить</button>
                             <button type="button" className="pt-button pt-large" onClick={ this.handleCancel }>Отмена</button>
                         </div>
                     </form>
