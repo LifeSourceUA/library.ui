@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { DateInput } from "@blueprintjs/datetime";
-import Moment from 'moment';
+import cx from 'classnames';
 import Dropzone from 'react-dropzone';
 import { Router } from 'routes';
 import Layout from 'components/Layout'
@@ -10,53 +9,59 @@ import * as Obj from 'lib/object';
 import withAuth from 'lib/auth/withAuth';
 
 const flatten = (data) => {
-    const result = Obj.flatten(data);
-    result.publishDate = Moment(data.publishDate).hour(0).minute(0).second(0).toDate();
-
-    return result;
+    return Obj.flatten(data);
 };
 
 const unflatten = (data) => {
-    const result = Object.assign({}, data);
-    result.publishDate = Moment(result.publishDate).format('YYYY-MM-DD');
-
-    return Obj.unflatten(result);
+    return Obj.unflatten(Object.assign({}, data));
 };
 
 class Single extends Component {
     state = {
-        item: {}
+        issue: {}
     };
 
     componentDidMount = () => {
         const issueId = this.props.url.query.issueId;
-        let action = 'create';
 
-        if (issueId) {
-            action = 'edit';
-            this.loadItem();
-        }
         this.setState({
-            action,
-            item: {
-                id: this.getId('0')
-            }
+            action: issueId ? 'edit' : 'create'
         });
+        this.loadItem();
     };
 
     loadItem = async () => {
         const { issueId, magazineId } = this.props.url.query;
 
         const tokens = await Auth.getTokens();
-        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
-            headers: {
-                Authorization: `Bearer ${tokens.accessToken}`
-            }
-        });
-        const item = await response.json();
+        const requests = [
+            fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}`, {
+                headers: {
+                    Authorization: `Bearer ${tokens.accessToken}`
+                }
+            })
+        ];
+        if (issueId) {
+            requests.push(
+                fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
+                    headers: {
+                        Authorization: `Bearer ${tokens.accessToken}`
+                    }
+                })
+            );
+        }
+
+        const response = await Promise.all(requests);
+
+        const magazine = await response[0].json();
+        const issue = issueId ? await response[1].json() : {
+            id: this.getId('0')
+        };
+
         this.setState(
             {
-                item: { ...flatten(item) }
+                issue: { ...flatten(issue) },
+                magazine
             }
         );
     };
@@ -64,39 +69,55 @@ class Single extends Component {
     getId = (number) => {
         const magazineId = this.props.url.query.magazineId;
 
-        return `${magazineId}-${number.padStart(4, '0')}`;
+        return `${magazineId}-${String(number).padStart(4, '0')}`;
+    };
+
+    setValue = (key, value) => {
+        this.setState({
+            issue: {
+                ...this.state.issue,
+                [key]: value
+            }
+        });
+    };
+    setValues = (data, cb) => {
+        this.setState({
+            issue: {
+                ...this.state.issue,
+                ...data
+            }
+        }, cb);
     };
 
     handleInput = (event) => {
         const el = event.target;
 
-        if (el.name === 'id') {
+        const readonly = this.state.action === 'create' ? [
+            'id',
+            'title'
+        ] : [
+            'id',
+            'numberTotal'
+        ];
+
+        if (readonly.indexOf(el.name) !== -1) {
             return;
         }
-
-        let id = this.state.item.id;
-        if (el.name === 'numbers.total') {
-            id = this.getId(el.value);
-        }
-
-        this.setState({
-            item: {
-                ...this.state.item,
-                id,
-                [el.name]: el.value
-            }
-        });
-    };
-
-    handleDateInput = (name) => {
-        return (date) => {
-            this.setState({
-                item: {
-                    ...this.state.item,
-                    [name]: date
-                }
-            })
+        const state = {
+            issue: this.state.issue
         };
+
+        if (this.state.action === 'create') {
+            let id = this.state.issue.id;
+            if (el.name === 'numberTotal') {
+                id = this.getId(el.value);
+            }
+
+            state.issue.id = id;
+        }
+        state.issue[el.name] = el.value;
+
+        this.setState(state, this.updateTitle);
     };
 
     handleDrop = (acceptedFiles) => {
@@ -126,10 +147,10 @@ class Single extends Component {
                 return false;
             }
 
-            const item = await response.json();
+            const issue = await response.json();
             this.setState(
                 {
-                    item: { ...flatten(item) }
+                    issue: { ...flatten(issue) }
                 }
             );
         };
@@ -156,7 +177,7 @@ class Single extends Component {
     };
 
     handleSave = async () => {
-        const data = unflatten(this.state.item);
+        const data = unflatten(this.state.issue);
         const action = this.state.action;
 
         const issueId = this.props.url.query.issueId;
@@ -191,30 +212,175 @@ class Single extends Component {
 
     renderInput = (name, props) => {
         return (
-            <input className="pt-input" type="text" name={ name } value={ this.state.item[name] || '' } onChange={ this.handleInput } { ...props }/>
+            <input className="pt-input" type="text" name={ name } value={ this.state.issue[name] || '' } onChange={ this.handleInput } { ...props }/>
         );
     };
 
     renderTextarea = (name) => {
         return (
-            <textarea className="pt-input" name={ name } value={ this.state.item[name] || '' } onChange={ this.handleInput }/>
+            <textarea className="pt-input" name={ name } value={ this.state.issue[name] || '' } onChange={ this.handleInput }/>
         );
     };
 
-    renderDate = (name) => {
+    renderPublicationYear = () => {
+        const { issue, action } = this.state;
+        const selected = issue.publishYear;
+
+        const onClick = (value) => {
+            return () => {
+                if (action === 'edit') {
+                    return;
+                }
+
+                this.setValue('publishYear', value);
+            }
+        };
+
+        const range = (start, end) => Array.from({length: (end - start + 1)}, (v, k) => k + start);
+        const options = range(2005, 2017).reverse().map((num) => {
+            const buttonClass = cx({
+                'pt-button': true,
+                'pt-active': selected === num,
+                'pt-intent-primary': true
+            });
+
+            return (
+                <button type="button" className={ buttonClass } onClick={ onClick(num) } key={ `py-${num}` }>{ num }</button>
+            );
+        });
+
         return (
-            <DateInput value={ this.state.item[name] } onChange={ this.handleDateInput(name) } />
+            <div className="app-button-group">
+                <label className="pt-label">
+                    Год публикации
+                </label>
+                <div className="pt-button-group">
+                    { options }
+                </div>
+            </div>
         );
+    };
+
+    renderYearNums = () => {
+        const { issue, magazine } = this.state;
+
+        if (!issue.publishYear) {
+            return null;
+        }
+
+        let limit = 0;
+        switch (magazine.info.freq) {
+            case 'monthly': limit = 12; break;
+            case 'quarterly': limit = 4; break;
+        }
+        if (limit === 0) {
+            return null;
+        }
+        const selected = issue.numberYear;
+
+        const onClick = (value) => {
+            return () => {
+                if (action === 'edit') {
+                    return;
+                }
+
+                const numberTotal = magazine.issues.reduce((result, item) => {
+                    if (item.publishYear === issue.publishYear && item.numberYear < value && item.numberTotal > result) {
+                        const diff = value - item.numberYear;
+                        return item.numberTotal + diff;
+                    }
+
+                    return result;
+                }, null);
+
+                this.setValues({
+                    numberYear: value,
+                    numberTotal
+                }, this.updateTitle);
+            }
+        };
+
+        const usedNumbers = magazine.issues.reduce((result, item) => {
+            if (item.publishYear === issue.publishYear) {
+                result.push(item.numberYear);
+            }
+
+            return result;
+        }, []);
+
+        const range = (start, end) => Array.from({length: (end - start)}, (v, k) => k + start);
+        const options = range(1, limit + 1).map((num) => {
+            const buttonClass = cx({
+                'pt-button': true,
+                'pt-active': selected === num,
+                'pt-intent-primary': true
+            });
+
+            const disabled = selected !== num && usedNumbers.indexOf(num) !== -1;
+
+            return (
+                <button
+                    type="button"
+                    className={ buttonClass }
+                    onClick={ onClick(num) }
+                    key={ `ny-${num}` }
+                    disabled={ disabled }
+                >
+                    { num }
+                </button>
+            );
+        });
+
+        return (
+            <div className="app-button-group">
+                <label className="pt-label">
+                    Номер в году
+                </label>
+                <div className="pt-button-group">
+                    { options }
+                </div>
+            </div>
+        );
+    };
+
+    updateTitle = () => {
+        const { issue } = this.state;
+
+        if (!issue.numberYear || !issue.numberTotal || !issue.publishYear) {
+            return;
+        }
+
+        const title = `№${issue.numberYear} (${issue.numberTotal}) ${issue.publishYear}`;
+        this.setState({
+            issue: {
+                ...issue,
+                title
+            }
+        }, this.updateId);
+    };
+    updateId = () => {
+        const { action, issue } = this.state;
+
+        if (action !== 'create' || !issue.numberTotal) {
+            return;
+        }
+
+        this.setState({
+            issue: {
+                ...issue,
+                id: this.getId(issue.numberTotal)
+            }
+        });
     };
 
     render = () => {
-        const { item, action } = this.state;
+        const { issue, action } = this.state;
 
-        const item$ = unflatten(item);
-        // const pdf = item$.attachments && item$.attachments.find((el) => {
+        const issue$ = unflatten(issue);
+        // const pdf = issue$.attachments && issue$.attachments.find((el) => {
         //     return el.type === 'public'
         // });
-        const pdf = item['attachments.0.type'] === 'public' ? item$.attachments[0] : null;
+        const pdf = issue['attachments.0.type'] === 'public' ? issue$.attachments[0] : null;
         const pdfComponent = pdf ? (
                 <div className="attachment-actions">
                     <a href={ pdf.location }>Скачать PDF</a>
@@ -240,12 +406,12 @@ class Single extends Component {
             )
         ] : null;
 
-        const canSave = !!item['numbers.total'] && item.title;
+        const canSave = !!issue.numberTotal && issue.title;
 
-        return action === 'create' || item.id ? (
+        return action === 'create' || issue.id ? (
             <Layout>
                 <div className="app-edit">
-                    <h1>Выпуск <span>{ item.title }</span></h1>
+                    <h1>Выпуск <span>{ issue.title }</span></h1>
                     <form>
                         <div className="pt-card pt-elevation-1">
                             <label className="pt-label">
@@ -263,17 +429,11 @@ class Single extends Component {
                         </div>
                         <h2>Публикация</h2>
                         <div className="pt-card pt-elevation-1">
-                            <label className="pt-label">
-                                Дата публикации
-                            </label>
-                            { this.renderDate('publishDate') }
-                            <label className="pt-label">
-                                Номер в году
-                                { this.renderInput('numbers.year') }
-                            </label>
+                            { this.renderPublicationYear() }
+                            { this.renderYearNums() }
                             <label className="pt-label">
                                 Номер общий
-                                { this.renderInput('numbers.total') }
+                                { this.renderInput('numberTotal') }
                             </label>
                         </div>
                         { attachment$ }

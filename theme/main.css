@@ -4,6 +4,9 @@
 body {
     background-color: #f5f8fa;
 }
+button:focus {
+    outline:0 !important;
+}
 
 .app-wrap {
     .app {
@@ -37,7 +40,7 @@ body {
     width: 100%;
 
     .app-list-id {
-        width: 10%;
+        width: 30%;
     }
     .app-list-title {}
     .app-list-actions {
@@ -64,6 +67,13 @@ body {
                 margin-left: 15px;
             }
         }
+    }
+
+    .app-button-group {
+        .pt-label {
+            margin-bottom: 8px;
+        }
+        margin-bottom: 16px;
     }
 }
 
