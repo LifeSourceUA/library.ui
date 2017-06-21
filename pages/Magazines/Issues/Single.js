@@ -178,6 +178,8 @@ class Single extends Component {
 
     handleSave = async () => {
         const data = unflatten(this.state.issue);
+        delete data['attachments'];
+
         const action = this.state.action;
 
         const issueId = this.props.url.query.issueId;
