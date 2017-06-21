@@ -262,7 +262,7 @@ class Single extends Component {
     };
 
     renderYearNums = () => {
-        const { issue, magazine } = this.state;
+        const { issue, magazine, action } = this.state;
 
         if (!issue.publishYear) {
             return null;
