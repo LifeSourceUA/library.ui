@@ -13,10 +13,10 @@ class List extends Component {
     };
 
     componentDidMount = async () => {
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
 
         const tokens = await Auth.getTokens();
-        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`, {
+        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues`, {
             headers: {
                 Authorization: `Bearer ${tokens.accessToken}`
             }
@@ -35,7 +35,7 @@ class List extends Component {
 
         const renderRow = (item) => {
             const routeParams = {
-                magazineId: parent.id,
+                periodicalId: parent.id,
                 issueId: item.id
             };
 
@@ -52,7 +52,7 @@ class List extends Component {
         };
 
         const routeParams = {
-            magazineId: parent.id
+            periodicalId: parent.id
         };
         const btnCreate = parent.id ? (
             <Link route="magazines-issues-create" params={ routeParams }>

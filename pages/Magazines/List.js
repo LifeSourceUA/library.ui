@@ -28,7 +28,7 @@ class List extends Component {
     render = () => {
         const renderRow = (item) => {
             const routeParams = {
-                magazineId: item.id
+                periodicalId: item.id
             };
 
             return (

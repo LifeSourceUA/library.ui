@@ -31,11 +31,11 @@ class Single extends Component {
     };
 
     loadItem = async () => {
-        const { issueId, magazineId } = this.props.url.query;
+        const { issueId, periodicalId } = this.props.url.query;
 
         const tokens = await Auth.getTokens();
         const requests = [
-            fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}`, {
+            fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}`, {
                 headers: {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }
@@ -43,7 +43,7 @@ class Single extends Component {
         ];
         if (issueId) {
             requests.push(
-                fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}`, {
+                fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues/${issueId}`, {
                     headers: {
                         Authorization: `Bearer ${tokens.accessToken}`
                     }
@@ -67,9 +67,9 @@ class Single extends Component {
     };
 
     getId = (number) => {
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
 
-        return `${magazineId}-${String(number).padStart(4, '0')}`;
+        return `${periodicalId}-${String(number).padStart(4, '0')}`;
     };
 
     setValue = (key, value) => {
@@ -122,7 +122,7 @@ class Single extends Component {
 
     handleDrop = (acceptedFiles) => {
         const issueId = this.props.url.query.issueId;
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
 
         const [file] = acceptedFiles;
         if (file.type !== 'application/pdf') {
@@ -132,7 +132,7 @@ class Single extends Component {
         const reader = new FileReader();
         reader.onload = async (e) => {
             const tokens = await Auth.getTokens();
-            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}/attachments`, {
+            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues/${issueId}/attachments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/octet-stream',
@@ -160,9 +160,9 @@ class Single extends Component {
     removeAttachment = (attachmentId) => async (event) => {
         event.preventDefault();
 
-        const { issueId, magazineId } = this.props.url.query;
+        const { issueId, periodicalId } = this.props.url.query;
 
-        const url = `${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues/${issueId}/attachments/${attachmentId}`;
+        const url = `${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues/${issueId}/attachments/${attachmentId}`;
 
         const tokens = await Auth.getTokens();
         await fetch(url, {
@@ -183,9 +183,9 @@ class Single extends Component {
         const action = this.state.action;
 
         const issueId = this.props.url.query.issueId;
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
 
-        let url = `${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}/issues`;
+        let url = `${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues`;
         if (action === 'edit') {
             url += `/${issueId}`;
         }
@@ -201,14 +201,14 @@ class Single extends Component {
         });
 
         Router.pushRoute('magazines-issues-list', {
-            magazineId
+            periodicalId
         });
     };
 
     handleCancel = () => {
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
         Router.pushRoute('magazines-issues-list', {
-            magazineId
+            periodicalId
         });
     };
 

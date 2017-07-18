@@ -16,15 +16,15 @@ class Single extends Component {
     };
 
     componentDidMount = async () => {
-        const magazineId = this.props.url.query.magazineId;
+        const periodicalId = this.props.url.query.periodicalId;
 
         let action = 'create';
 
-        if (magazineId) {
+        if (periodicalId) {
             action = 'edit';
 
             const tokens = await Auth.getTokens();
-            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${magazineId}?type=magazine`, {
+            const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}?type=magazine`, {
                 headers: {
                     Authorization: `Bearer ${tokens.accessToken}`
                 }
