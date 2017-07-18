@@ -22,6 +22,9 @@ export default ({ children, title = 'This is the default title' }) => (
                         <Link route="magazines-list">
                             <a className="pt-button pt-minimal">Журналы</a>
                         </Link>
+                        <Link route="newspapers-list">
+                            <a className="pt-button pt-minimal">Газеты</a>
+                        </Link>
                     </div>
                 </nav>
             </section>
