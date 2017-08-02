@@ -30,6 +30,18 @@ class Single extends Component {
         this.loadItem();
     };
 
+    componentDidUpdate = () => {
+        const issueId = this.props.url.query.issueId;
+        const { action } = this.state;
+
+        if (action === 'create' && issueId) {
+            this.setState({
+                action: 'edit'
+            });
+            this.loadItem();
+        }
+    };
+
     loadItem = async () => {
         const { issueId, periodicalId } = this.props.url.query;
 
@@ -191,7 +203,7 @@ class Single extends Component {
         }
 
         const tokens = await Auth.getTokens();
-        await fetch(url, {
+        const response = await fetch(url, {
             method: action === 'create' ? 'POST' : 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -199,10 +211,18 @@ class Single extends Component {
             },
             body: JSON.stringify(data)
         });
+        const result = await response.json();
 
-        Router.pushRoute('magazines-issues-list', {
-            periodicalId
-        });
+        if (action === 'create') {
+            Router.pushRoute('magazines-issues-single', {
+                periodicalId,
+                issueId: result.id
+            });
+        } else {
+            Router.pushRoute('magazines-issues-list', {
+                periodicalId
+            });
+        }
     };
 
     handleCancel = () => {
@@ -418,11 +438,11 @@ class Single extends Component {
                         <div className="pt-card pt-elevation-1">
                             <label className="pt-label">
                                 ID
-                                { this.renderInput('id', { disabled: action === 'edit' }) }
+                                { this.renderInput('id', { disabled: true }) }
                             </label>
                             <label className="pt-label">
                                 Название
-                                { this.renderInput('title') }
+                                { this.renderInput('title', { disabled: true }) }
                             </label>
                             <label className="pt-label">
                                 Описание
@@ -440,7 +460,7 @@ class Single extends Component {
                         </div>
                         { attachment$ }
                         <div className="controls">
-                            <button type="button" className="pt-button pt-large pt-intent-success" onClick={ this.handleSave } disabled={ !canSave }>Сохранить</button>
+                            <button type="button" className="pt-button pt-large pt-intent-success" onClick={ this.handleSave } disabled={ !canSave }>{ action === 'create' ? 'Создать' : 'Сохранить' }</button>
                             <button type="button" className="pt-button pt-large" onClick={ this.handleCancel }>Отмена</button>
                         </div>
                     </form>
