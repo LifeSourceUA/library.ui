@@ -16,7 +16,7 @@ class List extends Component {
         const periodicalId = this.props.url.query.periodicalId;
 
         const tokens = await Auth.getTokens();
-        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues`, {
+        const response = await fetch(`${LIBRARY_ENDPOINT}/v1/periodicals/${periodicalId}/issues?limit=100`, {
             headers: {
                 Authorization: `Bearer ${tokens.accessToken}`
             }
